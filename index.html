@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ビジネス掛け算ラボ</title>
+    <style>
+        /* --- CSS Variables & Base Styles --- */
+        :root {
+            --primary-color: #2E7D32; /* Growth Green */
+            --primary-light: #E8F5E9;
+            --accent-color: #FF9800;
+            --text-dark: #333333;
+            --text-gray: #666666;
+            --bg-color: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding-bottom: 60px; /* Space for footer */
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- Components: Header --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 10px;
+        }
+        h1 {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+        .sub-copy {
+            font-size: 14px;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        /* --- Components: Input Section --- */
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            margin-bottom: 16px;
+        }
+        .form-control:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: var(--text-gray);
+        }
+
+        select, textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #fff;
+            appearance: none; /* Mobile optimization */
+            -webkit-appearance: none;
+        }
+        
+        /* Custom arrow for select */
+        .select-wrapper {
+            position: relative;
+        }
+        .select-wrapper::after {
+            content: '▼';
+            font-size: 10px;
+            color: #888;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* --- Components: Buttons --- */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 50px; /* Pill shape */
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #43A047);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #fff;
+            color: var(--text-gray);
+            border: 1px solid #ddd;
+            width: 30%; /* Reset button is smaller */
+        }
+        
+        .btn-action {
+            padding: 8px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            background: #f0f0f0;
+            color: #555;
+            width: auto;
+            box-shadow: none;
+            margin-right: 5px;
+        }
+        .btn-action.copy { color: var(--primary-color); background: var(--primary-light); }
+        .btn-action.save { color: var(--accent-color); background: #FFF3E0; }
+
+        /* --- Components: Result Cards --- */
+        #result-area {
+            display: none; /* Hidden initially */
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .result-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            border-left: 5px solid var(--primary-color);
+            transition: box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .card-body p {
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .card-tag {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            background: #eee;
+            border-radius: 50%;
+            font-size: 12px;
+            margin-right: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .card-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* --- Next Actions Section --- */
+        .next-actions {
+            margin-top: 30px;
+            background: #f1f8e9;
+            border: 1px solid #c8e6c9;
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+        .next-actions h3 {
+            font-size: 15px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-outline:active {
+            background: var(--primary-light);
+        }
+        .btn-outline small {
+            font-size: 10px;
+            color: #888;
+            font-weight: normal;
+        }
+
+        /* --- Components: Favorites Section --- */
+        .favorites-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px dashed #ddd;
+        }
+        
+        .fav-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .fav-item {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            font-size: 14px;
+            position: relative;
+        }
+        .fav-meta {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* --- Footer & Toast --- */
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 40px;
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 600px) {
+            .fav-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. Header -->
+    <header>
+        <h1>ビジネス掛け算ラボ</h1>
+        <p class="sub-copy">業種と業種のあいだに、商売の芽をつくる🌱</p>
+    </header>
+
+    <!-- B. Input -->
+    <section class="input-section">
+        <h2 class="section-title">業種を選ぶだけ。まずは掛け算してみましょう😊</h2>
+        
+        <div class="input-group">
+            <div class="form-control">
+                <label for="my-industry">あなたの業種</label>
+                <div class="select-wrapper">
+                    <select id="my-industry">
+                        <option value="" disabled selected>選択してください</option>
+                        <!-- JS will populate this -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-control">
+                <label for="partner-industry">相手の業種</label>
+                <div class="select-wrapper">
+                    <select id="partner-industry">
+                        <option value="" disabled selected>選択してください</option>
+                        <!-- JS will populate this -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-control">
+                <label for="memo">任意：ターゲット/強みメモ</label>
+                <textarea id="memo" placeholder="例：30代女性がターゲット、親しみやすさが強みです"></textarea>
+                <p class="help-text">任意：状況がわかると、具体的になります（30秒でOK）</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- C. Buttons -->
+    <div class="btn-group">
+        <button class="btn btn-secondary" onclick="resetForm()">リセット</button>
+        <button class="btn btn-primary" onclick="generateIdeas()">掛け算する ✨</button>
+    </div>
+
+    <!-- D. Result -->
+    <section id="result-area">
+        <div class="result-header">
+            <h2 class="section-title">掛け算の結果が出ました🌱 <br><span style="font-size:12px; font-weight:normal; color:#666; margin-left:5px;">まずは1つだけ試せばOKです</span></h2>
+            <button class="btn btn-action" onclick="copyAll()">全部コピー</button>
+        </div>
+
+        <div class="result-cards" id="cards-container">
+            <!-- Cards will be injected here -->
+        </div>
+
+        <!-- Next Actions (New Feature) -->
+        <div class="next-actions">
+            <h3>🛠️ 次のアクション（AI活用コピー）</h3>
+            <div class="action-grid">
+                <button class="btn-outline" onclick="copyForNotebookLMSource()">
+                    <span>1. NotebookLMのソース用</span>
+                    <small>📄 コピー</small>
+                </button>
+                <button class="btn-outline" onclick="copyForNotebookLMPrompt()">
+                    <span>2. NotebookLMの指示プロンプト</span>
+                    <small>💬 コピー</small>
+                </button>
+                <button class="btn-outline" onclick="copyForMailPrompt()">
+                    <span>3. メール作成用GPTプロンプト</span>
+                    <small>🤖 コピー</small>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- E. Favorites Section -->
+    <section class="favorites-section">
+        <h3 class="section-title" style="cursor: pointer;" onclick="toggleFavorites()">
+            📂 お気に入り保存一覧 <span id="fav-count" style="font-size:12px; color:#888;">(0)</span>
+            <span style="float:right; font-size:12px;">▼ 表示/非表示</span>
+        </h3>
+        <div id="favorites-list" class="fav-grid" style="display:none;">
+            <!-- Favorites will be injected here -->
+        </div>
+    </section>
+
+    <!-- F. Footer -->
+    <footer>
+        <p class="notice">注意：生成はたたき台です。最後はあなたの言葉で短くしてOK</p>
+        <p>Business Kakezan Lab v1.1</p>
+    </footer>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast">コピーしました！</div>
+
+<script>
+    // --- Data ---
+    const industries = [
+        "税理士", "社労士", "行政書士", "司法書士", "弁護士", "中小企業診断士", 
+        "保険代理店", "不動産仲介", "工務店", "リフォーム", "設備工事（電気・空調・水道）", 
+        "製造業", "金属加工", "プラスチック加工", "印刷", "物流・運送", 
+        "IT開発", "Web制作", "Webマーケ・広告運用", "動画制作", "写真撮影", "デザイン", 
+        "飲食店", "美容室", "整体・整骨院", "クリニック", "介護事業", 
+        "教室・スクール", "小売店", "観光・宿泊", "その他（自由入力）"
+    ];
+
+    // Demo Output Data (Fixed as per requirement)
+    const demoResults = [
+        {
+            id: 1,
+            title: "数字を「報告」ではなく繁盛の作戦会議にする月1ミーティング",
+            problem: "数字の話で空気が重くなるのを防ぐ",
+            action: "(1)直近3ヶ月の数字をA4一枚に (2)いちばん気になる数字を1つ聞く (3)次の一手を1つだけ決める"
+        },
+        {
+            id: 2,
+            title: "現場写真から作る“困ったときの事例ページ”Web",
+            problem: "技術が伝わらず価格勝負になるのを避ける",
+            action: "(1)相談が多い3パターンを書く (2)写真を10枚集める (3)事例1件を1ページにする"
+        },
+        {
+            id: 3,
+            title: "交流会の翌日に送る「次の一手メッセージ」テンプレ",
+            problem: "名刺交換で終わらせない",
+            action: "(1)相手の困りごとを1行で要約 (2)提案を1つだけ添える (3)打合せ候補日を2つ出す"
+        }
+    ];
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', () => {
+        populateSelects();
+        loadFavorites();
+    });
+
+    // --- Functions ---
+
+    function populateSelects() {
+        const selects = ['my-industry', 'partner-industry'];
+        selects.forEach(id => {
+            const selectEl = document.getElementById(id);
+            industries.forEach(ind => {
+                const option = document.createElement('option');
+                option.value = ind;
+                option.textContent = ind;
+                selectEl.appendChild(option);
+            });
+        });
+    }
+
+    function generateIdeas() {
+        const myInd = document.getElementById('my-industry').value;
+        const partnerInd = document.getElementById('partner-industry').value;
+
+        if(!myInd || !partnerInd) {
+            showToast("業種を2つ選んでください 🙏");
+            return;
+        }
+
+        // Simulate Loading (Optional UX)
+        const resultArea = document.getElementById('result-area');
+        resultArea.style.display = 'block';
+        
+        // Scroll to results
+        setTimeout(() => {
+            resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+
+        renderCards(demoResults);
+    }
+
+    function renderCards(data) {
+        const container = document.getElementById('cards-container');
+        container.innerHTML = '';
+
+        data.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            // Format content for copying
+            const copyText = `案${index+1}：①${item.title} ②${item.problem} ③${item.action}`;
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="card-title">案${index+1}</span>
+                </div>
+                <div class="card-body">
+                    <p><span class="card-tag">①</span><strong>${item.title}</strong></p>
+                    <p><span class="card-tag">②</span>${item.problem}</p>
+                    <p><span class="card-tag">③</span>${item.action}</p>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-action copy" onclick="copyText('${copyText.replace(/'/g, "\\'")}')">コピー</button>
+                    <button class="btn btn-action save" onclick="saveToFav(${index})">保存</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function resetForm() {
+        document.getElementById('my-industry').selectedIndex = 0;
+        document.getElementById('partner-industry').selectedIndex = 0;
+        document.getElementById('memo').value = '';
+        document.getElementById('result-area').style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- Copy Functionality ---
+    function copyText(text) {
+        // Create textarea to select text
+        // execCommandを優先使用するため、DOM要素を作成します
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        
+        // 画面外に飛ばして見えないようにしますが、スクロールが発生しないようにfixedにします
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            // execCommand('copy')は古いメソッドですが、iframe等の制限環境では最も確実です
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showToast("コピーしました！📋");
+            } else {
+                console.error('Fallback: Copying text command was unsuccessful');
+                alert("コピーに失敗しました。");
+            }
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+            alert("コピーに失敗しました。");
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    function copyAll() {
+        let allText = "【ビジネス掛け算ラボ 結果】\n\n";
+        demoResults.forEach((item, index) => {
+            allText += `案${index+1}：\n①${item.title}\n②${item.problem}\n③${item.action}\n\n`;
+        });
+        copyText(allText);
+    }
+
+    // --- Advanced Copy Functions (New) ---
+    function getInputContext() {
+        return {
+            myInd: document.getElementById('my-industry').value || '未選択',
+            partnerInd: document.getElementById('partner-industry').value || '未選択',
+            memo: document.getElementById('memo').value || 'なし'
+        };
+    }
+
+    function copyForNotebookLMSource() {
+        const ctx = getInputContext();
+        let text = `# ビジネスアイデア創出会議議事録\n\n`;
+        text += `## 前提条件\n`;
+        text += `- 自社: ${ctx.myInd}\n`;
+        text += `- 連携先: ${ctx.partnerInd}\n`;
+        text += `- 補足メモ: ${ctx.memo}\n\n`;
+        text += `## 創出されたアイデア案\n\n`;
+        
+        demoResults.forEach((item, index) => {
+            text += `### 案${index+1}: ${item.title}\n`;
+            text += `#### 解決する課題\n${item.problem}\n`;
+            text += `#### 具体的なアクション\n${item.action}\n\n`;
+        });
+        
+        copyText(text);
+    }
+
+    function copyForNotebookLMPrompt() {
+        let text = `ソースとして提供した「ビジネスアイデア創出会議議事録」をもとに、以下の成果物を作成してください。\n\n`;
+        text += `1. **スライド構成案**: クライアントへの提案資料（全5枚程度）の構成を作成してください。各スライドのタイトルと、そのスライドに含めるべき箇条書きの要点を提示してください。\n`;
+        text += `2. **インフォグラフィック構成案**: それぞれのアイデアを一枚のインフォグラフィックで説明するための、視覚的レイアウトと配置要素の指示を作成してください。\n`;
+        copyText(text);
+    }
+
+    function copyForMailPrompt() {
+        const ctx = getInputContext();
+        let text = `あなたはプロのセールスコピーライターです。\n`;
+        text += `以下の3つのビジネスアイデア案をもとに、連携先である「${ctx.partnerInd}」の経営者に送る、アポイント打診のメール文面を作成してください。\n\n`;
+        text += `## 条件\n`;
+        text += `- 件名は開封したくなる魅力的なものにする\n`;
+        text += `- 丁寧だが堅苦しすぎない、親しみやすいトーン\n`;
+        text += `- 相手にとってのメリット（課題解決）を強調する\n`;
+        text += `- 以下の3つの案を簡潔に紹介し、詳細を打ち合わせたいと伝える\n\n`;
+        
+        text += `## 提案する3つのアイデア\n`;
+        demoResults.forEach((item, index) => {
+            text += `案${index+1}: ${item.title} (課題: ${item.problem})\n`;
+        });
+
+        copyText(text);
+    }
+
+
+    // --- Toast UI ---
+    function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.className = "toast show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    // --- LocalStorage / Favorites ---
+    const STORAGE_KEY = 'bizLabFavs';
+
+    function saveToFav(index) {
+        const item = demoResults[index];
+        const currentFavs = getFavs();
+        
+        // Add timestamp and Input info context
+        const ctx = getInputContext();
+        
+        const newItem = {
+            ...item,
+            timestamp: new Date().toLocaleString(),
+            context: `${ctx.myInd} × ${ctx.partnerInd}`
+        };
+
+        // Simple duplicate check (optional, here allowing dupes for different contexts)
+        currentFavs.unshift(newItem); // Add to top
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentFavs));
+        
+        loadFavorites();
+        showToast("お気に入りに保存しました 📂");
+        
+        // Open favorites section
+        document.getElementById('favorites-list').style.display = 'grid';
+    }
+
+    function getFavs() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    }
+
+    function loadFavorites() {
+        const favs = getFavs();
+        const container = document.getElementById('favorites-list');
+        const countSpan = document.getElementById('fav-count');
+        
+        countSpan.textContent = `(${favs.length})`;
+        container.innerHTML = '';
+
+        if (favs.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#999; grid-column: 1/-1;">まだ保存されたアイデアはありません。</p>';
+            return;
+        }
+
+        favs.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'fav-item';
+            div.innerHTML = `
+                <div class="delete-btn" onclick="deleteFav(${index})">×</div>
+                <div class="fav-meta">${item.timestamp} | ${item.context}</div>
+                <div style="font-weight:bold; color:var(--primary-color); margin-bottom:5px;">${item.title}</div>
+                <div style="font-size:12px; color:#555;">${item.problem}</div>
+                <button class="btn btn-action copy" style="margin-top:10px; font-size:11px; padding:4px 8px;" 
+                    onclick="copyText('①${item.title} ②${item.problem} ③${item.action}')">コピー</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function deleteFav(index) {
+        if(!confirm('削除してよろしいですか？')) return;
+        const favs = getFavs();
+        favs.splice(index, 1);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
+        loadFavorites();
+        showToast("削除しました 🗑️");
+    }
+
+    function toggleFavorites() {
+        const list = document.getElementById('favorites-list');
+        if (list.style.display === 'none') {
+            list.style.display = 'grid';
+        } else {
+            list.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
