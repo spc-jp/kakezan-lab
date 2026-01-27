@@ -75,6 +75,7 @@
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             margin-bottom: 20px;
+            position: relative;
         }
 
         .form-control {
@@ -127,6 +128,28 @@
             font-size: 12px;
             color: #888;
             margin-top: 4px;
+        }
+
+        /* Random Button inside Input Group */
+        .random-btn-container {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .btn-random {
+            background: #FFF3E0;
+            color: var(--accent-color);
+            border: 1px solid #FFE0B2;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: bold;
+        }
+        .btn-random:hover {
+            background: #FFE0B2;
         }
 
         /* --- Components: Buttons --- */
@@ -188,10 +211,21 @@
         .result-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-end; /* Align bottom */
             margin-bottom: 15px;
         }
         
+        .combination-badge {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
         .result-cards {
             display: flex;
             flex-direction: column;
@@ -205,6 +239,11 @@
             padding: 20px;
             border-left: 5px solid var(--primary-color);
             transition: box-shadow 0.3s;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .card:hover {
@@ -363,6 +402,30 @@
             bottom: 40px;
         }
 
+        /* Loading Overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 99;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { font-weight: bold; color: var(--primary-color); }
+
+
         /* Responsive adjustments */
         @media (min-width: 600px) {
             .fav-grid {
@@ -382,9 +445,17 @@
 
     <!-- B. Input -->
     <section class="input-section">
-        <h2 class="section-title">業種を選ぶだけ。まずは掛け算してみましょう😊</h2>
+        <h2 class="section-title">
+            業種を選ぶだけ。まずは掛け算してみましょう😊
+        </h2>
         
         <div class="input-group">
+            <div class="random-btn-container">
+                <button class="btn-random" onclick="setRandomIndustries()">
+                    🎲 おまかせ（ランダム）
+                </button>
+            </div>
+
             <div class="form-control">
                 <label for="my-industry">あなたの業種</label>
                 <div class="select-wrapper">
@@ -422,7 +493,10 @@
     <!-- D. Result -->
     <section id="result-area">
         <div class="result-header">
-            <h2 class="section-title">掛け算の結果が出ました🌱 <br><span style="font-size:12px; font-weight:normal; color:#666; margin-left:5px;">まずは1つだけ試せばOKです</span></h2>
+            <div>
+                <div id="combination-display" class="combination-badge"></div>
+                <h2 class="section-title" style="margin-bottom:0;">掛け算の結果が出ました🌱</h2>
+            </div>
             <button class="btn btn-action" onclick="copyAll()">全部コピー</button>
         </div>
 
@@ -430,7 +504,7 @@
             <!-- Cards will be injected here -->
         </div>
 
-        <!-- Next Actions (New Feature) -->
+        <!-- Next Actions -->
         <div class="next-actions">
             <h3>🛠️ 次のアクション（AI活用コピー）</h3>
             <div class="action-grid">
@@ -464,8 +538,14 @@
     <!-- F. Footer -->
     <footer>
         <p class="notice">注意：生成はたたき台です。最後はあなたの言葉で短くしてOK</p>
-        <p>Business Kakezan Lab v1.1</p>
+        <p>Business Kakezan Lab v1.2 (Improved UX)</p>
     </footer>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+    <div class="loader"></div>
+    <div class="loading-text" id="loading-text">計算中...</div>
 </div>
 
 <!-- Toast Notification -->
@@ -475,33 +555,11 @@
     // --- Data ---
     const industries = [
         "税理士", "社労士", "行政書士", "司法書士", "弁護士", "中小企業診断士", 
-        "保険代理店", "不動産仲介", "工務店", "リフォーム", "設備工事（電気・空調・水道）", 
+        "保険代理店", "不動産仲介", "工務店", "リフォーム", "設備工事", 
         "製造業", "金属加工", "プラスチック加工", "印刷", "物流・運送", 
-        "IT開発", "Web制作", "Webマーケ・広告運用", "動画制作", "写真撮影", "デザイン", 
+        "IT開発", "Web制作", "Webマーケ", "動画制作", "写真撮影", "デザイン", 
         "飲食店", "美容室", "整体・整骨院", "クリニック", "介護事業", 
-        "教室・スクール", "小売店", "観光・宿泊", "その他（自由入力）"
-    ];
-
-    // Demo Output Data (Fixed as per requirement)
-    const demoResults = [
-        {
-            id: 1,
-            title: "数字を「報告」ではなく繁盛の作戦会議にする月1ミーティング",
-            problem: "数字の話で空気が重くなるのを防ぐ",
-            action: "(1)直近3ヶ月の数字をA4一枚に (2)いちばん気になる数字を1つ聞く (3)次の一手を1つだけ決める"
-        },
-        {
-            id: 2,
-            title: "現場写真から作る“困ったときの事例ページ”Web",
-            problem: "技術が伝わらず価格勝負になるのを避ける",
-            action: "(1)相談が多い3パターンを書く (2)写真を10枚集める (3)事例1件を1ページにする"
-        },
-        {
-            id: 3,
-            title: "交流会の翌日に送る「次の一手メッセージ」テンプレ",
-            problem: "名刺交換で終わらせない",
-            action: "(1)相手の困りごとを1行で要約 (2)提案を1つだけ添える (3)打合せ候補日を2つ出す"
-        }
+        "教室・スクール", "小売店", "観光・宿泊", "その他"
     ];
 
     // --- Init ---
@@ -525,6 +583,27 @@
         });
     }
 
+    function setRandomIndustries() {
+        const mySelect = document.getElementById('my-industry');
+        const partnerSelect = document.getElementById('partner-industry');
+        
+        // Randomly pick different indices (skipping 0 which is "Select...")
+        const rand1 = Math.floor(Math.random() * industries.length);
+        let rand2 = Math.floor(Math.random() * industries.length);
+        while(rand1 === rand2) {
+            rand2 = Math.floor(Math.random() * industries.length);
+        }
+
+        // Set values (+1 because option 0 is placeholder)
+        mySelect.selectedIndex = rand1 + 1;
+        partnerSelect.selectedIndex = rand2 + 1;
+
+        // Visual feedback (Flash background slightly)
+        const group = document.querySelector('.input-group');
+        group.style.backgroundColor = '#FFF8E1';
+        setTimeout(() => { group.style.backgroundColor = ''; }, 300);
+    }
+
     function generateIdeas() {
         const myInd = document.getElementById('my-industry').value;
         const partnerInd = document.getElementById('partner-industry').value;
@@ -534,25 +613,71 @@
             return;
         }
 
-        // Simulate Loading (Optional UX)
-        const resultArea = document.getElementById('result-area');
-        resultArea.style.display = 'block';
+        // Show Loading
+        const loader = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
+        loader.style.display = 'flex';
         
-        // Scroll to results
-        setTimeout(() => {
-            resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+        const messages = ["組み合わせを分析中...", "課題を抽出中...", "アイデアを生成中..."];
+        let msgIndex = 0;
+        
+        // Cycle text
+        const interval = setInterval(() => {
+            if(msgIndex < messages.length) {
+                loadingText.textContent = messages[msgIndex];
+                msgIndex++;
+            }
+        }, 500);
 
-        renderCards(demoResults);
+        // Finish after 1.5s
+        setTimeout(() => {
+            clearInterval(interval);
+            loader.style.display = 'none';
+            loadingText.textContent = "計算中...";
+            
+            // Show Results
+            const resultArea = document.getElementById('result-area');
+            resultArea.style.display = 'block';
+            resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Show Badge
+            document.getElementById('combination-display').textContent = `${myInd} × ${partnerInd}`;
+
+            renderCards(myInd, partnerInd);
+        }, 1500);
     }
 
-    function renderCards(data) {
+    function renderCards(myInd, partnerInd) {
         const container = document.getElementById('cards-container');
         container.innerHTML = '';
 
-        data.forEach((item, index) => {
+        // Dynamic Text Generation (Replacing placeholders)
+        // This makes the demo feel "real" by injecting industry names
+        const dynamicResults = [
+            {
+                id: 1,
+                title: `「${partnerInd}」との定例数字共有ミーティング`,
+                problem: `お互いの専門外（${myInd}の数字、${partnerInd}の現場）が見えにくい`,
+                action: `(1)直近3ヶ月の${myInd}実績をA4一枚に (2)${partnerInd}の最も気になる課題を1つ聞く (3)次の一手を決める`
+            },
+            {
+                id: 2,
+                title: `現場写真で作る「${partnerInd}向け」事例解説Web`,
+                problem: `${myInd}の技術が伝わらず、価格競争になるのを避ける`,
+                action: `(1)${partnerInd}からよくある相談3つを書く (2)現場写真を10枚集める (3)解決事例を1ページにまとめる`
+            },
+            {
+                id: 3,
+                title: `交流会翌日に送る「${partnerInd}特化」メッセージ`,
+                problem: `ただの名刺交換で終わらせず、${myInd}としての価値を伝える`,
+                action: `(1)相手の困りごとを1行で要約 (2)${myInd}視点の提案を1つ添える (3)打合せ候補日を2つ出す`
+            }
+        ];
+
+        dynamicResults.forEach((item, index) => {
             const card = document.createElement('div');
             card.className = 'card';
+            card.style.animationDelay = `${index * 0.1}s`; // Staggered animation
             
             // Format content for copying
             const copyText = `案${index+1}：①${item.title} ②${item.problem} ③${item.action}`;
@@ -568,11 +693,14 @@
                 </div>
                 <div class="card-actions">
                     <button class="btn btn-action copy" onclick="copyText('${copyText.replace(/'/g, "\\'")}')">コピー</button>
-                    <button class="btn btn-action save" onclick="saveToFav(${index})">保存</button>
+                    <button class="btn btn-action save" onclick="saveToFav(${index}, '${item.title.replace(/'/g, "\\'")}', '${item.problem.replace(/'/g, "\\'")}', '${item.action.replace(/'/g, "\\'")}')">保存</button>
                 </div>
             `;
             container.appendChild(card);
         });
+        
+        // Store current results globally for bulk copy functions to access
+        window.currentResults = dynamicResults;
     }
 
     function resetForm() {
@@ -583,48 +711,38 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // --- Copy Functionality ---
+    // --- Copy Functionality (Robust) ---
     function copyText(text) {
-        // Create textarea to select text
-        // execCommandを優先使用するため、DOM要素を作成します
         const textArea = document.createElement("textarea");
         textArea.value = text;
-        
-        // 画面外に飛ばして見えないようにしますが、スクロールが発生しないようにfixedにします
         textArea.style.position = "fixed";
         textArea.style.left = "-9999px";
         textArea.style.top = "0";
         document.body.appendChild(textArea);
-        
         textArea.focus();
         textArea.select();
         
         try {
-            // execCommand('copy')は古いメソッドですが、iframe等の制限環境では最も確実です
             const successful = document.execCommand('copy');
-            if (successful) {
-                showToast("コピーしました！📋");
-            } else {
-                console.error('Fallback: Copying text command was unsuccessful');
-                alert("コピーに失敗しました。");
-            }
+            if (successful) showToast("コピーしました！📋");
+            else alert("コピーに失敗しました。");
         } catch (err) {
-            console.error('Fallback: Oops, unable to copy', err);
+            console.error('Copy failed', err);
             alert("コピーに失敗しました。");
         }
-        
         document.body.removeChild(textArea);
     }
 
     function copyAll() {
+        if (!window.currentResults) return;
         let allText = "【ビジネス掛け算ラボ 結果】\n\n";
-        demoResults.forEach((item, index) => {
+        window.currentResults.forEach((item, index) => {
             allText += `案${index+1}：\n①${item.title}\n②${item.problem}\n③${item.action}\n\n`;
         });
         copyText(allText);
     }
 
-    // --- Advanced Copy Functions (New) ---
+    // --- Advanced Copy Functions ---
     function getInputContext() {
         return {
             myInd: document.getElementById('my-industry').value || '未選択',
@@ -634,48 +752,34 @@
     }
 
     function copyForNotebookLMSource() {
+        if (!window.currentResults) return;
         const ctx = getInputContext();
         let text = `# ビジネスアイデア創出会議議事録\n\n`;
-        text += `## 前提条件\n`;
-        text += `- 自社: ${ctx.myInd}\n`;
-        text += `- 連携先: ${ctx.partnerInd}\n`;
-        text += `- 補足メモ: ${ctx.memo}\n\n`;
+        text += `## 前提条件\n- 自社: ${ctx.myInd}\n- 連携先: ${ctx.partnerInd}\n- 補足メモ: ${ctx.memo}\n\n`;
         text += `## 創出されたアイデア案\n\n`;
-        
-        demoResults.forEach((item, index) => {
-            text += `### 案${index+1}: ${item.title}\n`;
-            text += `#### 解決する課題\n${item.problem}\n`;
-            text += `#### 具体的なアクション\n${item.action}\n\n`;
+        window.currentResults.forEach((item, index) => {
+            text += `### 案${index+1}: ${item.title}\n#### 解決する課題\n${item.problem}\n#### 具体的なアクション\n${item.action}\n\n`;
         });
-        
         copyText(text);
     }
 
     function copyForNotebookLMPrompt() {
         let text = `ソースとして提供した「ビジネスアイデア創出会議議事録」をもとに、以下の成果物を作成してください。\n\n`;
-        text += `1. **スライド構成案**: クライアントへの提案資料（全5枚程度）の構成を作成してください。各スライドのタイトルと、そのスライドに含めるべき箇条書きの要点を提示してください。\n`;
-        text += `2. **インフォグラフィック構成案**: それぞれのアイデアを一枚のインフォグラフィックで説明するための、視覚的レイアウトと配置要素の指示を作成してください。\n`;
+        text += `1. **スライド構成案**: クライアントへの提案資料（全5枚程度）の構成案\n`;
+        text += `2. **インフォグラフィック構成案**: 各アイデアを視覚的に説明するためのレイアウト指示\n`;
         copyText(text);
     }
 
     function copyForMailPrompt() {
+        if (!window.currentResults) return;
         const ctx = getInputContext();
-        let text = `あなたはプロのセールスコピーライターです。\n`;
-        text += `以下の3つのビジネスアイデア案をもとに、連携先である「${ctx.partnerInd}」の経営者に送る、アポイント打診のメール文面を作成してください。\n\n`;
-        text += `## 条件\n`;
-        text += `- 件名は開封したくなる魅力的なものにする\n`;
-        text += `- 丁寧だが堅苦しすぎない、親しみやすいトーン\n`;
-        text += `- 相手にとってのメリット（課題解決）を強調する\n`;
-        text += `- 以下の3つの案を簡潔に紹介し、詳細を打ち合わせたいと伝える\n\n`;
-        
-        text += `## 提案する3つのアイデア\n`;
-        demoResults.forEach((item, index) => {
-            text += `案${index+1}: ${item.title} (課題: ${item.problem})\n`;
+        let text = `あなたはプロのセールスコピーライターです。\n以下の3つのアイデアをもとに、連携先「${ctx.partnerInd}」へのアポ打診メールを作成してください。\n\n`;
+        text += `## 提案内容\n`;
+        window.currentResults.forEach((item, index) => {
+            text += `- ${item.title} (課題: ${item.problem})\n`;
         });
-
         copyText(text);
     }
-
 
     // --- Toast UI ---
     function showToast(message) {
@@ -688,27 +792,23 @@
     // --- LocalStorage / Favorites ---
     const STORAGE_KEY = 'bizLabFavs';
 
-    function saveToFav(index) {
-        const item = demoResults[index];
+    function saveToFav(index, title, problem, action) {
         const currentFavs = getFavs();
-        
-        // Add timestamp and Input info context
         const ctx = getInputContext();
         
         const newItem = {
-            ...item,
+            title: title,
+            problem: problem,
+            action: action,
             timestamp: new Date().toLocaleString(),
             context: `${ctx.myInd} × ${ctx.partnerInd}`
         };
 
-        // Simple duplicate check (optional, here allowing dupes for different contexts)
-        currentFavs.unshift(newItem); // Add to top
+        currentFavs.unshift(newItem);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(currentFavs));
         
         loadFavorites();
         showToast("お気に入りに保存しました 📂");
-        
-        // Open favorites section
         document.getElementById('favorites-list').style.display = 'grid';
     }
 
@@ -720,9 +820,7 @@
     function loadFavorites() {
         const favs = getFavs();
         const container = document.getElementById('favorites-list');
-        const countSpan = document.getElementById('fav-count');
-        
-        countSpan.textContent = `(${favs.length})`;
+        document.getElementById('fav-count').textContent = `(${favs.length})`;
         container.innerHTML = '';
 
         if (favs.length === 0) {
@@ -756,11 +854,7 @@
 
     function toggleFavorites() {
         const list = document.getElementById('favorites-list');
-        if (list.style.display === 'none') {
-            list.style.display = 'grid';
-        } else {
-            list.style.display = 'none';
-        }
+        list.style.display = (list.style.display === 'none') ? 'grid' : 'none';
     }
 </script>
 
