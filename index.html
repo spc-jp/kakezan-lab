@@ -4,859 +4,523 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ビジネス掛け算ラボ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        /* --- CSS Variables & Base Styles --- */
-        :root {
-            --primary-color: #2E7D32; /* Growth Green */
-            --primary-light: #E8F5E9;
-            --accent-color: #FF9800;
-            --text-dark: #333333;
-            --text-gray: #666666;
-            --bg-color: #F9FAFB;
-            --card-bg: #FFFFFF;
-            --border-radius: 12px;
-            --shadow: 0 4px 6px rgba(0,0,0,0.05);
-            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
-        }
+    :root {
+        --bg:          #0d0f14;
+        --bg2:         #141720;
+        --bg3:         #1c1f2b;
+        --surface:     #1e2232;
+        --surface2:    #252a3a;
+        --border:      rgba(255,255,255,0.07);
+        --border-gold: rgba(200,166,80,0.35);
+        --gold:        #c8a650;
+        --gold-light:  #e6c878;
+        --gold-dim:    rgba(200,166,80,0.12);
+        --gold-glow:   rgba(200,166,80,0.25);
+        --teal:        #3ec9a7;
+        --teal-dim:    rgba(62,201,167,0.12);
+        --rose:        #e07070;
+        --blue:        #5b9cf6;
+        --blue-dim:    rgba(91,156,246,0.12);
+        --text:        #e8eaf0;
+        --text-sub:    #8a90a8;
+        --text-dim:    #4a5070;
+        --radius-lg:   18px;
+        --radius-md:   12px;
+        --radius-sm:   8px;
+        --shadow-gold: 0 0 30px rgba(200,166,80,0.15);
+        --shadow-card: 0 8px 32px rgba(0,0,0,0.4);
+        --shadow-deep: 0 16px 48px rgba(0,0,0,0.6);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Noto Sans JP', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding-bottom: 100px;
+        -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 80% 50% at 20% -10%, rgba(200,166,80,0.06) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 40% at 80% 110%, rgba(62,201,167,0.04) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-        }
+    /* ─ Header ─ */
+    .site-header {
+        background: linear-gradient(180deg, #0a0c10 0%, var(--bg2) 100%);
+        border-bottom: 1px solid var(--border-gold);
+        padding: 36px 20px 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .site-header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 50%;
+        transform: translateX(-50%);
+        width: 300px; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        opacity: 0.6;
+    }
+    .header-kamon { font-size: 32px; display: block; margin-bottom: 12px; filter: drop-shadow(0 0 12px rgba(200,166,80,0.5)); }
+    .header-en { font-size: 10px; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .site-header h1 { font-family: 'Shippori Mincho', serif; font-size: 28px; font-weight: 700; color: #fff; letter-spacing: 0.12em; margin-bottom: 6px; }
+    .site-header .tagline { font-size: 12px; color: var(--text-sub); letter-spacing: 0.05em; }
+    .header-rule { display: flex; align-items: center; gap: 12px; justify-content: center; margin-top: 16px; }
+    .header-rule span { display: block; height: 1px; width: 40px; background: linear-gradient(90deg, transparent, var(--border-gold)); }
+    .header-rule span:last-child { background: linear-gradient(90deg, var(--border-gold), transparent); }
+    .header-rule i { font-style: normal; font-size: 11px; color: var(--gold); letter-spacing: 0.15em; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-dark);
-            line-height: 1.6;
-            padding-bottom: 60px; /* Space for footer */
-        }
+    /* ─ Layout ─ */
+    .container { max-width: 600px; margin: 0 auto; padding: 28px 16px; position: relative; z-index: 1; }
 
-        /* --- Layout --- */
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+    /* ─ Step label ─ */
+    .step-label { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--gold-dim); border: 1px solid var(--border-gold); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold); flex-shrink: 0; }
+    .step-text { font-size: 12px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.08em; text-transform: uppercase; }
 
-        /* --- Components: Header --- */
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-top: 10px;
-        }
-        h1 {
-            font-size: 24px;
-            color: var(--primary-color);
-            margin-bottom: 8px;
-            font-weight: 800;
-        }
-        .sub-copy {
-            font-size: 14px;
-            color: var(--text-gray);
-            font-weight: 500;
-        }
+    /* ─ Input card ─ */
+    .input-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px 20px 20px; margin-bottom: 14px; box-shadow: var(--shadow-card); position: relative; overflow: hidden; }
+    .input-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold-light), transparent); opacity: 0.5; }
+    .random-row { display: flex; justify-content: flex-end; margin-bottom: 18px; }
+    .btn-random { background: var(--gold-dim); color: var(--gold-light); border: 1px solid var(--border-gold); padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: 'Noto Sans JP', sans-serif; letter-spacing: 0.04em; transition: background 0.2s, transform 0.1s, box-shadow 0.2s; }
+    .btn-random:hover { background: rgba(200,166,80,0.2); box-shadow: 0 0 14px var(--gold-glow); }
+    .btn-random:active { transform: scale(0.96); }
+    .industry-row { display: grid; grid-template-columns: 1fr 36px 1fr; gap: 8px; align-items: end; margin-bottom: 18px; }
+    .times-wrap { display: flex; align-items: center; justify-content: center; padding-bottom: 10px; }
+    .times-symbol { font-family: 'Shippori Mincho', serif; font-size: 20px; font-weight: 700; color: var(--gold); text-shadow: 0 0 12px var(--gold-glow); }
+    .field-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 7px; letter-spacing: 0.07em; }
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--gold); font-size: 13px; }
+    select { width: 100%; padding: 12px 32px 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: 'Noto Sans JP', sans-serif; font-weight: 500; background: var(--bg3); color: var(--text); appearance: none; -webkit-appearance: none; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
+    select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-dim); }
+    select.selected { border-color: rgba(200,166,80,0.4); color: var(--gold-light); font-weight: 700; }
+    select option { background: var(--bg3); color: var(--text); }
+    .memo-field { margin-top: 2px; }
+    .memo-field label { font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 7px; display: flex; align-items: center; gap: 5px; letter-spacing: 0.07em; }
+    .memo-field textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Noto Sans JP', sans-serif; font-size: 14px; resize: vertical; min-height: 68px; background: var(--bg3); color: var(--text); transition: border-color 0.2s, box-shadow 0.2s; line-height: 1.6; }
+    .memo-field textarea::placeholder { color: var(--text-dim); }
+    .memo-field textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-dim); }
+    .field-hint { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
 
-        /* --- Components: Input Section --- */
-        .section-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    /* ─ Buttons ─ */
+    .btn-row { display: flex; gap: 10px; margin-bottom: 32px; }
+    .btn-generate { flex: 1; padding: 17px; background: linear-gradient(135deg, #a07830, var(--gold-light), #a07830); background-size: 200% 100%; border: none; border-radius: 50px; font-family: 'Noto Sans JP', sans-serif; font-size: 16px; font-weight: 700; color: #1a1200; letter-spacing: 0.06em; cursor: pointer; transition: background-position 0.4s, box-shadow 0.2s, transform 0.1s; box-shadow: 0 4px 20px rgba(200,166,80,0.4), inset 0 1px 0 rgba(255,255,255,0.3); }
+    .btn-generate:hover { background-position: 100% 0; box-shadow: 0 6px 28px rgba(200,166,80,0.55); }
+    .btn-generate:active { transform: scale(0.98); }
+    .btn-reset { padding: 17px 20px; background: transparent; border: 1px solid var(--border); border-radius: 50px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 500; color: var(--text-sub); cursor: pointer; transition: border-color 0.2s, color 0.2s; white-space: nowrap; }
+    .btn-reset:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
 
-        .input-group {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
-            position: relative;
-        }
+    /* ─ Loading ─ */
+    #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(13,15,20,0.85); backdrop-filter: blur(8px); z-index: 99; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
+    .loader-ring { width: 52px; height: 52px; border: 2px solid var(--border); border-top-color: var(--gold); border-right-color: var(--gold-light); border-radius: 50%; animation: spin 0.8s linear infinite; box-shadow: 0 0 20px var(--gold-glow); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-msg { font-size: 14px; font-weight: 500; color: var(--gold-light); letter-spacing: 0.1em; }
 
-        .form-control {
-            margin-bottom: 16px;
-        }
-        .form-control:last-child {
-            margin-bottom: 0;
-        }
+    /* ─ Result ─ */
+    #result-area { display: none; }
+    .combo-hero { background: linear-gradient(135deg, var(--bg2) 0%, var(--surface) 100%); border: 1px solid var(--border-gold); border-radius: var(--radius-lg); padding: 28px 20px 24px; text-align: center; margin-bottom: 24px; box-shadow: var(--shadow-gold), var(--shadow-card); position: relative; overflow: hidden; }
+    .combo-hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 200px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+    .combo-hero::after { content: '×'; position: absolute; font-family: 'Shippori Mincho', serif; font-size: 140px; font-weight: 700; color: rgba(200,166,80,0.04); top: -20px; left: 50%; transform: translateX(-50%); pointer-events: none; line-height: 1; }
+    .combo-eyebrow { font-size: 10px; letter-spacing: 0.25em; color: var(--gold); text-transform: uppercase; margin-bottom: 14px; }
+    .combo-text { font-family: 'Shippori Mincho', serif; font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 0.06em; line-height: 1.4; position: relative; z-index: 1; }
+    .combo-text .combo-x { color: var(--gold-light); margin: 0 10px; text-shadow: 0 0 16px var(--gold-glow); }
+    .combo-memo { margin-top: 10px; font-size: 12px; color: var(--text-sub); font-style: italic; min-height: 16px; }
+    .result-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .result-label { font-size: 12px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.08em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+    .result-label::before { content: ''; display: block; width: 3px; height: 14px; background: var(--gold); border-radius: 2px; }
+    .result-meta-btns { display: flex; gap: 8px; }
+    .btn-meta { padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 20px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; letter-spacing: 0.03em; transition: all 0.15s; }
+    .btn-regen { background: transparent; border: 1px solid var(--border); color: var(--text-sub); }
+    .btn-regen:hover { border-color: var(--gold); color: var(--gold-light); }
+    .btn-copyall { background: var(--gold-dim); border: 1px solid var(--border-gold); color: var(--gold-light); }
+    .btn-copyall:hover { background: rgba(200,166,80,0.2); box-shadow: 0 0 10px var(--gold-glow); }
 
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: var(--text-gray);
-        }
+    /* ─ Cards ─ */
+    .cards-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+    .idea-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); animation: fadeUp 0.45s ease-out both; transition: border-color 0.2s, box-shadow 0.2s; }
+    .idea-card:nth-child(2) { animation-delay: 0.1s; }
+    .idea-card:nth-child(3) { animation-delay: 0.2s; }
+    .idea-card:hover { border-color: rgba(255,255,255,0.12); box-shadow: var(--shadow-deep); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .idea-card.teal { border-top: 2px solid var(--teal); }
+    .idea-card.gold { border-top: 2px solid var(--gold); }
+    .idea-card.blue { border-top: 2px solid var(--blue); }
+    .card-head { padding: 16px 18px 14px; display: flex; align-items: flex-start; gap: 12px; border-bottom: 1px solid var(--border); }
+    .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+    .card-icon.teal { background: var(--teal-dim); }
+    .card-icon.gold { background: var(--gold-dim); }
+    .card-icon.blue { background: var(--blue-dim); }
+    .card-head-info { flex: 1; min-width: 0; }
+    .card-type-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+    .card-type-tag.teal { color: var(--teal); }
+    .card-type-tag.gold { color: var(--gold); }
+    .card-type-tag.blue { color: var(--blue); }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.5; }
+    .memo-badge { display: inline-block; background: var(--gold-dim); border: 1px solid var(--border-gold); color: var(--gold); font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 4px; margin-left: 6px; letter-spacing: 0.05em; vertical-align: middle; }
+    .card-body { padding: 16px 18px; }
+    .card-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .card-row:last-child { margin-bottom: 0; }
+    .row-num { width: 20px; height: 20px; border-radius: 50%; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--text-dim); flex-shrink: 0; margin-top: 2px; }
+    .row-text { font-size: 14px; line-height: 1.65; color: var(--text); }
+    .card-foot { padding: 0 18px 16px; display: flex; justify-content: flex-end; gap: 8px; }
+    .btn-card { padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; letter-spacing: 0.03em; transition: all 0.15s; border: 1px solid; }
+    .btn-card-save { background: transparent; border-color: var(--border); color: var(--text-sub); }
+    .btn-card-save:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+    .btn-card-copy.teal { background: var(--teal-dim); border-color: rgba(62,201,167,0.3); color: var(--teal); }
+    .btn-card-copy.teal:hover { background: rgba(62,201,167,0.2); }
+    .btn-card-copy.gold { background: var(--gold-dim); border-color: var(--border-gold); color: var(--gold-light); }
+    .btn-card-copy.gold:hover { background: rgba(200,166,80,0.2); }
+    .btn-card-copy.blue { background: var(--blue-dim); border-color: rgba(91,156,246,0.3); color: var(--blue); }
+    .btn-card-copy.blue:hover { background: rgba(91,156,246,0.2); }
 
-        select, textarea, input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            background-color: #fff;
-            appearance: none; /* Mobile optimization */
-            -webkit-appearance: none;
-        }
-        
-        /* Custom arrow for select */
-        .select-wrapper {
-            position: relative;
-        }
-        .select-wrapper::after {
-            content: '▼';
-            font-size: 10px;
-            color: #888;
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-        }
+    /* ─ Next block ─ */
+    .next-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 32px; box-shadow: var(--shadow-card); }
+    .next-block-title { font-size: 12px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .next-block-title::before { content: ''; display: block; width: 3px; height: 14px; background: var(--teal); border-radius: 2px; }
+    .next-btn-list { display: flex; flex-direction: column; gap: 8px; }
+    .btn-next { width: 100%; padding: 14px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; gap: 10px; transition: border-color 0.2s, background 0.2s; }
+    .btn-next:hover { border-color: rgba(255,255,255,0.15); background: var(--surface2); }
+    .btn-next .next-label { flex: 1; line-height: 1.5; }
+    .btn-next .next-label small { display: block; font-size: 11px; font-weight: 400; color: var(--text-dim); margin-top: 2px; }
+    .btn-next .next-chip { background: var(--bg); border: 1px solid var(--border); color: var(--text-sub); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; letter-spacing: 0.04em; }
+    .btn-next:hover .next-chip { border-color: var(--teal); color: var(--teal); }
 
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
+    /* ─ Divider ─ */
+    .section-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 20px; }
+    .section-divider span { display: block; height: 1px; flex: 1; background: var(--border); }
+    .section-divider i { font-style: normal; font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; white-space: nowrap; }
 
-        .help-text {
-            font-size: 12px;
-            color: #888;
-            margin-top: 4px;
-        }
+    /* ─ Favorites ─ */
+    .fav-section { position: relative; z-index: 1; }
+    .fav-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 12px 0; user-select: none; }
+    .fav-header-left { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.05em; }
+    .fav-badge { background: var(--gold-dim); border: 1px solid var(--border-gold); color: var(--gold); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .fav-chevron { font-size: 11px; color: var(--text-dim); transition: transform 0.25s; }
+    .fav-chevron.open { transform: rotate(180deg); }
+    .fav-list { display: none; flex-direction: column; gap: 10px; padding-bottom: 8px; }
+    .fav-list.open { display: flex; }
+    .fav-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+    .fav-meta { font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 6px; }
+    .fav-title { font-size: 14px; font-weight: 700; color: var(--gold-light); margin-bottom: 4px; line-height: 1.45; padding-right: 28px; }
+    .fav-desc { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
+    .fav-foot { margin-top: 10px; }
+    .btn-fav-copy { padding: 6px 14px; font-size: 11px; font-weight: 700; background: var(--gold-dim); border: 1px solid var(--border-gold); border-radius: 6px; color: var(--gold-light); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; transition: background 0.15s; }
+    .btn-fav-copy:hover { background: rgba(200,166,80,0.2); }
+    .btn-fav-del { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-dim); font-size: 18px; cursor: pointer; line-height: 1; transition: color 0.15s; }
+    .btn-fav-del:hover { color: var(--rose); }
 
-        /* Random Button inside Input Group */
-        .random-btn-container {
-            text-align: right;
-            margin-bottom: 10px;
-        }
-        .btn-random {
-            background: #FFF3E0;
-            color: var(--accent-color);
-            border: 1px solid #FFE0B2;
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: bold;
-        }
-        .btn-random:hover {
-            background: #FFE0B2;
-        }
+    /* ─ Footer ─ */
+    footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; position: relative; z-index: 1; }
+    footer .footer-rule { height: 1px; background: var(--border); margin-bottom: 16px; }
 
-        /* --- Components: Buttons --- */
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
+    /* ─ Toast ─ */
+    .toast { visibility: hidden; position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: var(--surface2); border: 1px solid var(--border-gold); color: var(--gold-light); padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 700; z-index: 200; opacity: 0; transition: opacity 0.25s, bottom 0.25s; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 20px var(--gold-glow); letter-spacing: 0.03em; }
+    .toast.show { visibility: visible; opacity: 1; bottom: 40px; }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 50px; /* Pill shape */
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-            width: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), #43A047);
-            color: white;
-        }
-
-        .btn-secondary {
-            background-color: #fff;
-            color: var(--text-gray);
-            border: 1px solid #ddd;
-            width: 30%; /* Reset button is smaller */
-        }
-        
-        .btn-action {
-            padding: 8px 12px;
-            font-size: 13px;
-            border-radius: 6px;
-            background: #f0f0f0;
-            color: #555;
-            width: auto;
-            box-shadow: none;
-            margin-right: 5px;
-        }
-        .btn-action.copy { color: var(--primary-color); background: var(--primary-light); }
-        .btn-action.save { color: var(--accent-color); background: #FFF3E0; }
-
-        /* --- Components: Result Cards --- */
-        #result-area {
-            display: none; /* Hidden initially */
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end; /* Align bottom */
-            margin-bottom: 15px;
-        }
-        
-        .combination-badge {
-            display: inline-block;
-            background: var(--primary-light);
-            color: var(--primary-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .result-cards {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 20px;
-            border-left: 5px solid var(--primary-color);
-            transition: box-shadow 0.3s;
-            animation: fadeIn 0.5s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .card:hover {
-            box-shadow: var(--shadow-lg);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        .card-title {
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .card-body p {
-            margin-bottom: 10px;
-            font-size: 15px;
-        }
-
-        .card-tag {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            text-align: center;
-            background: #eee;
-            border-radius: 50%;
-            font-size: 12px;
-            margin-right: 5px;
-            color: #555;
-            font-weight: bold;
-        }
-
-        .card-actions {
-            margin-top: 15px;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        /* --- Next Actions Section --- */
-        .next-actions {
-            margin-top: 30px;
-            background: #f1f8e9;
-            border: 1px solid #c8e6c9;
-            border-radius: var(--border-radius);
-            padding: 20px;
-        }
-        .next-actions h3 {
-            font-size: 15px;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .action-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
-        .btn-outline {
-            background: white;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 10px;
-            font-size: 14px;
-            border-radius: 8px;
-            width: 100%;
-            cursor: pointer;
-            text-align: left;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .btn-outline:active {
-            background: var(--primary-light);
-        }
-        .btn-outline small {
-            font-size: 10px;
-            color: #888;
-            font-weight: normal;
-        }
-
-        /* --- Components: Favorites Section --- */
-        .favorites-section {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px dashed #ddd;
-        }
-        
-        .fav-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        
-        .fav-item {
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-            font-size: 14px;
-            position: relative;
-        }
-        .fav-meta {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 5px;
-        }
-        .delete-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: #999;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        /* --- Footer & Toast --- */
-        footer {
-            text-align: center;
-            font-size: 12px;
-            color: #999;
-            margin-top: 40px;
-            padding: 20px;
-        }
-
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 50px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
-            bottom: 40px;
-        }
-
-        /* Loading Overlay */
-        #loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8);
-            z-index: 99;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 10px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { font-weight: bold; color: var(--primary-color); }
-
-
-        /* Responsive adjustments */
-        @media (min-width: 600px) {
-            .fav-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
     </style>
 </head>
 <body>
 
+<header class="site-header">
+    <span class="header-kamon">🌱</span>
+    <span class="header-en">Business Kakezan Lab</span>
+    <h1>ビジネス掛け算ラボ</h1>
+    <p class="tagline">業種と業種のあいだに、商売の芽をつくる</p>
+    <div class="header-rule"><span></span><i>✦</i><span></span></div>
+</header>
+
 <div class="container">
-    <!-- A. Header -->
-    <header>
-        <h1>ビジネス掛け算ラボ</h1>
-        <p class="sub-copy">業種と業種のあいだに、商売の芽をつくる🌱</p>
-    </header>
 
-    <!-- B. Input -->
-    <section class="input-section">
-        <h2 class="section-title">
-            業種を選ぶだけ。まずは掛け算してみましょう😊
-        </h2>
-        
-        <div class="input-group">
-            <div class="random-btn-container">
-                <button class="btn-random" onclick="setRandomIndustries()">
-                    🎲 おまかせ（ランダム）
-                </button>
-            </div>
-
-            <div class="form-control">
-                <label for="my-industry">あなたの業種</label>
-                <div class="select-wrapper">
-                    <select id="my-industry">
-                        <option value="" disabled selected>選択してください</option>
-                        <!-- JS will populate this -->
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-control">
-                <label for="partner-industry">相手の業種</label>
-                <div class="select-wrapper">
-                    <select id="partner-industry">
-                        <option value="" disabled selected>選択してください</option>
-                        <!-- JS will populate this -->
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-control">
-                <label for="memo">任意：ターゲット/強みメモ</label>
-                <textarea id="memo" placeholder="例：30代女性がターゲット、親しみやすさが強みです"></textarea>
-                <p class="help-text">任意：状況がわかると、具体的になります（30秒でOK）</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- C. Buttons -->
-    <div class="btn-group">
-        <button class="btn btn-secondary" onclick="resetForm()">リセット</button>
-        <button class="btn btn-primary" onclick="generateIdeas()">掛け算する ✨</button>
+    <div class="step-label">
+        <div class="step-num">1</div>
+        <div class="step-text">業種を選ぶ</div>
     </div>
 
-    <!-- D. Result -->
+    <div class="input-card">
+        <div class="random-row">
+            <button class="btn-random" onclick="setRandom()">🎲 おまかせランダム</button>
+        </div>
+        <div class="industry-row">
+            <div class="field-group">
+                <label>あなたの業種</label>
+                <div class="select-wrap">
+                    <select id="my-industry" onchange="onSel(this)">
+                        <option value="" disabled selected>選択してください</option>
+                    </select>
+                </div>
+            </div>
+            <div class="times-wrap"><span class="times-symbol">×</span></div>
+            <div class="field-group">
+                <label>相手の業種</label>
+                <div class="select-wrap">
+                    <select id="partner-industry" onchange="onSel(this)">
+                        <option value="" disabled selected>選択してください</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="memo-field">
+            <label>💬 強み・状況メモ（任意）</label>
+            <textarea id="memo" placeholder="例：30代女性向け、地元密着15年、親しみやすさが強みです"></textarea>
+            <p class="field-hint">入力するとアイデアに反映されます（なくてもOK）</p>
+        </div>
+    </div>
+
+    <div class="step-label" style="margin-top:4px;">
+        <div class="step-num">2</div>
+        <div class="step-text">掛け算する</div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn-reset" onclick="resetForm()">↩ リセット</button>
+        <button class="btn-generate" onclick="generate()">掛け算する ✦</button>
+    </div>
+
     <section id="result-area">
-        <div class="result-header">
-            <div>
-                <div id="combination-display" class="combination-badge"></div>
-                <h2 class="section-title" style="margin-bottom:0;">掛け算の結果が出ました🌱</h2>
+
+        <div class="combo-hero">
+            <div class="combo-eyebrow">— Result —</div>
+            <div class="combo-text">
+                <span id="combo-my"></span>
+                <span class="combo-x">×</span>
+                <span id="combo-partner"></span>
             </div>
-            <button class="btn btn-action" onclick="copyAll()">全部コピー</button>
+            <div class="combo-memo" id="combo-memo"></div>
         </div>
 
-        <div class="result-cards" id="cards-container">
-            <!-- Cards will be injected here -->
-        </div>
-
-        <!-- Next Actions -->
-        <div class="next-actions">
-            <h3>🛠️ 次のアクション（AI活用コピー）</h3>
-            <div class="action-grid">
-                <button class="btn-outline" onclick="copyForNotebookLMSource()">
-                    <span>1. NotebookLMのソース用</span>
-                    <small>📄 コピー</small>
-                </button>
-                <button class="btn-outline" onclick="copyForNotebookLMPrompt()">
-                    <span>2. NotebookLMの指示プロンプト</span>
-                    <small>💬 コピー</small>
-                </button>
-                <button class="btn-outline" onclick="copyForMailPrompt()">
-                    <span>3. メール作成用GPTプロンプト</span>
-                    <small>🤖 コピー</small>
-                </button>
+        <div class="result-meta-row">
+            <div class="result-label">アイデア 3案</div>
+            <div class="result-meta-btns">
+                <button class="btn-meta btn-regen" onclick="regen()">🔄 別パターン</button>
+                <button class="btn-meta btn-copyall" onclick="copyAll()">📋 全コピー</button>
             </div>
         </div>
-    </section>
 
-    <!-- E. Favorites Section -->
-    <section class="favorites-section">
-        <h3 class="section-title" style="cursor: pointer;" onclick="toggleFavorites()">
-            📂 お気に入り保存一覧 <span id="fav-count" style="font-size:12px; color:#888;">(0)</span>
-            <span style="float:right; font-size:12px;">▼ 表示/非表示</span>
-        </h3>
-        <div id="favorites-list" class="fav-grid" style="display:none;">
-            <!-- Favorites will be injected here -->
+        <div class="cards-list" id="cards-container"></div>
+
+        <div class="next-block">
+            <div class="next-block-title">すぐ使える！コピーして活用</div>
+            <div class="next-btn-list">
+                <button class="btn-next" onclick="copyLineMsg()">
+                    <span class="next-label">① 交流会翌日に送るメッセージ<small>LINE・メールにそのまま貼れる</small></span>
+                    <span class="next-chip">💬 コピー</span>
+                </button>
+                <button class="btn-next" onclick="copyMeetingMemo()">
+                    <span class="next-label">② 商談前の自分メモ<small>メモ帳・Wordにそのまま貼れる</small></span>
+                    <span class="next-chip">📝 コピー</span>
+                </button>
+                <button class="btn-next" onclick="copyProposalOutline()">
+                    <span class="next-label">③ 提案書のたたき台（見出し構成）<small>ExcelやWordの章立てにそのまま使える</small></span>
+                    <span class="next-chip">📄 コピー</span>
+                </button>
+            </div>
         </div>
+
     </section>
 
-    <!-- F. Footer -->
+    <div class="section-divider"><span></span><i>お気に入り保存</i><span></span></div>
+
+    <div class="fav-section">
+        <div class="fav-header" onclick="toggleFavs()">
+            <div class="fav-header-left">📂 保存済みアイデア <span class="fav-badge" id="fav-count">0</span></div>
+            <span class="fav-chevron" id="fav-icon">▼</span>
+        </div>
+        <div class="fav-list" id="fav-list"></div>
+    </div>
+
     <footer>
-        <p class="notice">注意：生成はたたき台です。最後はあなたの言葉で短くしてOK</p>
-        <p>Business Kakezan Lab v1.2 (Improved UX)</p>
+        <div class="footer-rule"></div>
+        <p>Business Kakezan Lab v3.0　—　生成はたたき台です。最後はあなたの言葉で ✍</p>
     </footer>
 </div>
 
-<!-- Loading Overlay -->
 <div id="loading-overlay">
-    <div class="loader"></div>
-    <div class="loading-text" id="loading-text">計算中...</div>
+    <div class="loader-ring"></div>
+    <div class="loading-msg" id="loading-msg">組み合わせを分析中...</div>
 </div>
 
-<!-- Toast Notification -->
-<div id="toast" class="toast">コピーしました！</div>
+<div class="toast" id="toast"></div>
 
 <script>
-    // --- Data ---
-    const industries = [
-        "税理士", "社労士", "行政書士", "司法書士", "弁護士", "中小企業診断士", 
-        "保険代理店", "不動産仲介", "工務店", "リフォーム", "設備工事", 
-        "製造業", "金属加工", "プラスチック加工", "印刷", "物流・運送", 
-        "IT開発", "Web制作", "Webマーケ", "動画制作", "写真撮影", "デザイン", 
-        "飲食店", "美容室", "整体・整骨院", "クリニック", "介護事業", 
-        "教室・スクール", "小売店", "観光・宿泊", "その他"
-    ];
+const industries = [
+    "税理士","社労士","行政書士","司法書士","弁護士","中小企業診断士",
+    "保険代理店","不動産仲介","工務店","リフォーム","設備工事",
+    "製造業","金属加工","プラスチック加工","印刷","物流・運送",
+    "IT開発","Web制作","Webマーケ","動画制作","写真撮影","デザイン",
+    "飲食店","美容室","整体・整骨院","クリニック","介護事業",
+    "教室・スクール","小売店","観光・宿泊","その他"
+];
+const industryKw = {
+    "税理士":        {s:["数字管理","節税ノウハウ","経営分析","補助金知識"],p:["数字が苦手","申告の手間","キャッシュフロー不安","コスト感覚が鈍い"]},
+    "社労士":        {s:["労務管理","助成金活用","採用サポート","社員定着"],p:["採用難","勤怠トラブル","退職リスク","規則が古い"]},
+    "行政書士":      {s:["許可申請","書類整備","法令対応","外国人雇用"],p:["申請が複雑","書類ミス","手続きの遅れ","コンプライアンス不安"]},
+    "保険代理店":    {s:["リスクマネジメント","補償設計","福利厚生提案","長期顧客関係"],p:["万一への不安","福利厚生の弱さ","事業継続リスク","損害対応の遅さ"]},
+    "不動産仲介":    {s:["物件情報","立地分析","交渉力","市場動向"],p:["テナント探し","事務所移転","遊休スペース活用","コスト削減"]},
+    "工務店":        {s:["施工技術","地域密着","アフターフォロー","職人ネットワーク"],p:["設備の老朽化","バリアフリー化","修繕費用","工期短縮ニーズ"]},
+    "リフォーム":    {s:["空間改善提案","素材知識","短工期対応","デザイン力"],p:["職場環境の悪さ","イメージ刷新","集客スペースの改善","老朽化対策"]},
+    "製造業":        {s:["高品質製品","カスタム対応","量産技術","品質管理"],p:["知名度の低さ","BtoC展開できない","職人不足","コスト圧力"]},
+    "IT開発":        {s:["業務自動化","システム連携","データ活用","効率化提案"],p:["アナログ業務の多さ","情報管理の煩雑さ","業務の属人化","DX遅延"]},
+    "Web制作":       {s:["集客導線設計","ブランディング","LP制作","SEO対策"],p:["集客できていない","古いホームページ","SNS更新の手間","差別化できない"]},
+    "Webマーケ":     {s:["SNS運用","広告設計","コンテンツ企画","データ分析"],p:["新規顧客が増えない","認知度が低い","リピーターが増えない","口コミが広がらない"]},
+    "動画制作":      {s:["映像演出","ストーリーテリング","ブランド表現","SNS最適化"],p:["魅力が伝わらない","動画がない","採用に弱い","ブランドが地味"]},
+    "写真撮影":      {s:["視覚的魅力向上","商品撮影","空間撮影","プロフィール写真"],p:["写真が古い","商品の魅力が伝わらない","SNS映えしない","スタッフ紹介が弱い"]},
+    "デザイン":      {s:["ブランド設計","視認性向上","信頼感UP","季節訴求"],p:["チラシが古い","ロゴが弱い","差別化できない","印刷物の統一感がない"]},
+    "飲食店":        {s:["集客力","食体験","地域コミュニティ","テイクアウト需要"],p:["ランチ・宴会集客","個室・貸切ニーズ","地域のつながり強化","スタッフ研修"]},
+    "美容室":        {s:["リラックス空間","接客力","女性顧客基盤","トレンド感"],p:["身だしなみ向上ニーズ","モチベーションUP","外見からの自信","採用時の印象"]},
+    "整体・整骨院":  {s:["体の不調改善","健康習慣提案","疲労回復","姿勢改善"],p:["スタッフの腰痛","肉体労働疲れ","デスクワーク不調","健康経営ニーズ"]},
+    "クリニック":    {s:["健康管理","産業医連携","予防医療","メンタルケア"],p:["従業員の体調管理","受診機会の少なさ","健診後のフォロー","休職リスク"]},
+    "介護事業":      {s:["高齢者対応","地域包括ケア","家族支援","施設紹介"],p:["高齢スタッフ対応","介護離職リスク","働き手の高齢化","福祉制度の複雑さ"]},
+    "教室・スクール":{s:["スキルアップ提案","研修カスタマイズ","資格取得支援","継続学習"],p:["スタッフのスキル不足","研修コスト","モチベーション維持","人材育成の仕組みがない"]},
+    "小売店":        {s:["商品知識","地域密着仕入れ","体験型購買","ギフト対応"],p:["従業員へのギフトニーズ","備品の仕入れ","セールイベント","コスト削減"]},
+    "物流・運送":    {s:["配送ネットワーク","緊急対応力","保管・在庫管理","多品目対応"],p:["資材搬入の手間","機材運搬","重量物移動","在庫スペース"]},
+    "印刷":          {s:["紙媒体制作","データ入稿対応","小ロット対応","短納期"],p:["紙の情報ツールがない","マニュアル整備","チラシ量が多い","一括印刷コスト"]},
+    "観光・宿泊":    {s:["体験設計","非日常空間","地域資源活用","インバウンド対応"],p:["社員旅行・レクリエーション","接待場所探し","研修合宿","感謝イベント場所"]},
+};
+const defKw = {s:["専門知識","地域密着","対応スピード","品質の高さ"],p:["認知不足","新規顧客獲得","継続的な関係構築","差別化の難しさ"]};
+const cardDefs = [
+    {color:"teal",icon:"🤝",type:"関係構築"},
+    {color:"gold",icon:"📣",type:"集客連携"},
+    {color:"blue",icon:"🔧",type:"課題解決"},
+];
+let currentResults = [], currentVariant = 0;
 
-    // --- Init ---
-    document.addEventListener('DOMContentLoaded', () => {
-        populateSelects();
-        loadFavorites();
+document.addEventListener('DOMContentLoaded', () => {
+    ['my-industry','partner-industry'].forEach(id => {
+        const el = document.getElementById(id);
+        industries.forEach(n => { const o=document.createElement('option'); o.value=o.textContent=n; el.appendChild(o); });
     });
+    loadFavs();
+});
 
-    // --- Functions ---
+function onSel(el) { el.classList.toggle('selected', !!el.value); }
 
-    function populateSelects() {
-        const selects = ['my-industry', 'partner-industry'];
-        selects.forEach(id => {
-            const selectEl = document.getElementById(id);
-            industries.forEach(ind => {
-                const option = document.createElement('option');
-                option.value = ind;
-                option.textContent = ind;
-                selectEl.appendChild(option);
-            });
-        });
-    }
+function setRandom() {
+    let i1=Math.floor(Math.random()*industries.length), i2=Math.floor(Math.random()*industries.length);
+    while(i2===i1) i2=Math.floor(Math.random()*industries.length);
+    const my=document.getElementById('my-industry'), pt=document.getElementById('partner-industry');
+    my.value=industries[i1]; pt.value=industries[i2]; [my,pt].forEach(s=>s.classList.add('selected'));
+    const card=document.querySelector('.input-card');
+    card.style.transition='border-color 0.3s'; card.style.borderColor='rgba(200,166,80,0.5)';
+    setTimeout(()=>{ card.style.borderColor=''; }, 600);
+}
 
-    function setRandomIndustries() {
-        const mySelect = document.getElementById('my-industry');
-        const partnerSelect = document.getElementById('partner-industry');
-        
-        // Randomly pick different indices (skipping 0 which is "Select...")
-        const rand1 = Math.floor(Math.random() * industries.length);
-        let rand2 = Math.floor(Math.random() * industries.length);
-        while(rand1 === rand2) {
-            rand2 = Math.floor(Math.random() * industries.length);
-        }
+function generate() {
+    const my=document.getElementById('my-industry').value, pt=document.getElementById('partner-industry').value;
+    if(!my||!pt){ showToast('業種を2つ選んでください'); return; }
+    currentVariant=0; showLoading(()=>renderResult(my,pt));
+}
+function regen() {
+    const my=document.getElementById('my-industry').value, pt=document.getElementById('partner-industry').value;
+    if(!my||!pt) return;
+    currentVariant=(currentVariant+1)%4;
+    const c=document.getElementById('cards-container');
+    c.style.opacity='0.3'; c.style.transition='opacity 0.2s';
+    setTimeout(()=>{ renderCards(my,pt); c.style.opacity='1'; }, 250);
+    showToast('別パターンに切り替えました 🔄');
+}
+function showLoading(cb) {
+    const ov=document.getElementById('loading-overlay'), mg=document.getElementById('loading-msg');
+    ov.style.display='flex';
+    const msgs=['組み合わせを分析中...','課題を抽出中...','アイデアを生成中...'];
+    let i=0; const iv=setInterval(()=>{ if(i<msgs.length) mg.textContent=msgs[i++]; },480);
+    setTimeout(()=>{ clearInterval(iv); ov.style.display='none'; mg.textContent='組み合わせを分析中...'; cb(); },1700);
+}
+function renderResult(my,pt) {
+    const memo=document.getElementById('memo').value.trim();
+    document.getElementById('combo-my').textContent=my;
+    document.getElementById('combo-partner').textContent=pt;
+    document.getElementById('combo-memo').textContent=memo?`💬 ${memo.slice(0,30)}`:'';
+    const ra=document.getElementById('result-area'); ra.style.display='block';
+    ra.scrollIntoView({behavior:'smooth',block:'start'}); renderCards(my,pt);
+}
+function buildIdeas(my,pt,memo,v) {
+    const mk=industryKw[my]||defKw, pk=industryKw[pt]||defKw;
+    const i=v%4, memoHint=memo?`（${memo.slice(0,18)}を活かして）`:'';
+    return [
+        { title:`「${pt}」の${pk.p[i%pk.p.length]}を${my}の${mk.s[i%mk.s.length]}で解決する勉強会${memoHint}`, problem:`${pt}は「${pk.p[i%pk.p.length]}」に困っていることが多い。${my}の${mk.s[i%mk.s.length]}はそこに直接役立てる`, action:`①${pt}向けに「${pk.p[i%pk.p.length]}あるある」を3つ書き出す　②${my}としての解決事例1件をA4一枚にまとめる　③交流会後に「30分勉強会しませんか？」と声かけする` },
+        { title:`${my} × ${pt} の「お互い紹介カード」を作る${memoHint}`, problem:`${pt}の顧客は${my}も必要としているケースが多い。紹介し合う仕組みを作れば紹介コストゼロで新規獲得できる`, action:`①${pk.s[(i+1)%pk.s.length]}を活かして紹介できる場面を3つ書く　②${my}側の紹介カード（名刺サイズ）を作る　③「一緒に紹介し合いませんか」と提案する` },
+        { title:`${pt}の顧客に刺さる「${my}の${mk.s[(i+2)%mk.s.length]}」提案書を作る`, problem:`${pt}顧客が抱える「${pk.p[(i+2)%pk.p.length]}」に${my}は${mk.s[(i+2)%mk.s.length]}で貢献できる。でも伝わっていないだけ`, action:`①${pt}がよく受ける相談トップ3を聞き出す　②${my}視点の解決策を1枚にまとめる　③「こんな時は紹介ください」と具体的な場面を伝える` },
+    ];
+}
+function renderCards(my,pt) {
+    const memo=document.getElementById('memo').value.trim();
+    const c=document.getElementById('cards-container'); c.innerHTML='';
+    currentResults=buildIdeas(my,pt,memo,currentVariant);
+    currentResults.forEach((item,idx)=>{
+        const cd=cardDefs[idx], hasMemo=memo&&idx===0;
+        const card=document.createElement('div'); card.className=`idea-card ${cd.color}`; card.style.animationDelay=`${idx*0.09}s`;
+        card.innerHTML=`<div class="card-head"><div class="card-icon ${cd.color}">${cd.icon}</div><div class="card-head-info"><div class="card-type-tag ${cd.color}">案${idx+1}　${cd.type}</div><div class="card-title">${item.title}${hasMemo?'<span class="memo-badge">メモ反映</span>':''}</div></div></div><div class="card-body"><div class="card-row"><div class="row-num">②</div><div class="row-text">${item.problem}</div></div><div class="card-row"><div class="row-num">③</div><div class="row-text">${item.action}</div></div></div><div class="card-foot"><button class="btn-card btn-card-save" onclick="saveFav(${idx})">保存</button><button class="btn-card btn-card-copy ${cd.color}" onclick="copyCard(${idx})">📋 コピー</button></div>`;
+        c.appendChild(card);
+    });
+    window._copyData=currentResults.map((it,i)=>`【案${i+1}：${cardDefs[i].type}】\n①${it.title}\n②${it.problem}\n③${it.action}`);
+}
 
-        // Set values (+1 because option 0 is placeholder)
-        mySelect.selectedIndex = rand1 + 1;
-        partnerSelect.selectedIndex = rand2 + 1;
+function resetForm() {
+    ['my-industry','partner-industry'].forEach(id=>{ const el=document.getElementById(id); el.value=''; el.classList.remove('selected'); });
+    document.getElementById('memo').value=''; document.getElementById('result-area').style.display='none';
+    window.scrollTo({top:0,behavior:'smooth'});
+}
 
-        // Visual feedback (Flash background slightly)
-        const group = document.querySelector('.input-group');
-        group.style.backgroundColor = '#FFF8E1';
-        setTimeout(() => { group.style.backgroundColor = ''; }, 300);
-    }
+function clip(text) {
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;left:-9999px;top:0;';
+    document.body.appendChild(ta); ta.focus(); ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta);
+}
+function copyCard(idx) { if(!window._copyData) return; clip(window._copyData[idx]); showToast('コピーしました 📋'); }
+function copyAll() {
+    if(!window._copyData) return;
+    const my=document.getElementById('my-industry').value, pt=document.getElementById('partner-industry').value;
+    clip(`【ビジネス掛け算ラボ：${my} × ${pt}】\n\n`+window._copyData.join('\n\n')); showToast('全アイデアをコピーしました 📋');
+}
+function ctx() { return { my:document.getElementById('my-industry').value||'未選択', pt:document.getElementById('partner-industry').value||'未選択', memo:document.getElementById('memo').value.trim()||'なし' }; }
 
-    function generateIdeas() {
-        const myInd = document.getElementById('my-industry').value;
-        const partnerInd = document.getElementById('partner-industry').value;
+function copyLineMsg() {
+    if(!currentResults.length){ showToast('先にアイデアを生成してください'); return; }
+    const c=ctx(), it=currentResults[0];
+    clip(`昨日はお会いできて嬉しかったです😊\n\n${c.my}をやっております、[お名前]と申します。\n\nお話の中で気になったのが「${it.problem.split('。')[0]}」という点でした。\n\nじつは私どもの${c.my}では、${it.title}という形でお役に立てるかもしれません。\n\nもし一度、30分ほどお時間いただけませんか？\nお会いした時間をビジネスにつなげたいと思っています。\n\nよろしければ来週中でご都合いかがでしょうか。\n\n[お名前]\n[連絡先]`);
+    showToast('翌日メッセージをコピーしました 💬');
+}
+function copyMeetingMemo() {
+    if(!currentResults.length){ showToast('先にアイデアを生成してください'); return; }
+    const c=ctx();
+    clip(`■ 商談前メモ　${new Date().toLocaleDateString('ja-JP')}\n━━━━━━━━━━━━━━━━━━\n自社：${c.my}　／　相手：${c.pt}\n補足：${c.memo}\n\n■ 今日の目標\n□ 相手の課題を1つ聞き出す\n□ 自社のアイデアを1つ伝える\n□ 次回アクションを決める\n\n■ 提案できる3つのアイデア\n${currentResults.map((it,i)=>`【案${i+1}：${cardDefs[i].type}】\n・${it.title}\n・解決できること：${it.problem}`).join('\n\n')}\n\n■ 相手への質問メモ（当日記入）\nQ1：\nQ2：\nQ3：\n\n■ 次のアクション（当日記入）\n□ \n━━━━━━━━━━━━━━━━━━`);
+    showToast('商談前メモをコピーしました 📝');
+}
+function copyProposalOutline() {
+    if(!currentResults.length){ showToast('先にアイデアを生成してください'); return; }
+    const c=ctx();
+    clip(`■ 提案書：${c.my} × ${c.pt} 連携提案\n　作成日：${new Date().toLocaleDateString('ja-JP')}\n━━━━━━━━━━━━━━━━━━\n\n【1】はじめに\n　・ご挨拶と提案の背景\n　・${c.my}として${c.pt}さまへできること\n\n【2】現状と課題\n　・${currentResults[0].problem}\n　・${currentResults[1].problem}\n\n【3】提案内容\n\n　▶ 提案①：${currentResults[0].title}\n　　${currentResults[0].action}\n\n　▶ 提案②：${currentResults[1].title}\n　　${currentResults[1].action}\n\n　▶ 提案③：${currentResults[2].title}\n　　${currentResults[2].action}\n\n【4】進め方イメージ\n　STEP1：まず顔合わせ（30分）\n　STEP2：お互いの事例共有\n　STEP3：小さく試す（1件からスタート）\n\n【5】お問い合わせ先\n　[社名]　[担当者名]\n　[連絡先]\n━━━━━━━━━━━━━━━━━━`);
+    showToast('提案書たたき台をコピーしました 📄');
+}
 
-        if(!myInd || !partnerInd) {
-            showToast("業種を2つ選んでください 🙏");
-            return;
-        }
+const FAV_KEY='bizLabFavsV3';
+function getFavs(){ try{ return JSON.parse(localStorage.getItem(FAV_KEY))||[]; }catch{ return []; } }
+function putFavs(f){ localStorage.setItem(FAV_KEY,JSON.stringify(f)); }
+function saveFav(idx){ const it=currentResults[idx]; if(!it) return; const c=ctx(), f=getFavs(); f.unshift({title:it.title,problem:it.problem,action:it.action,context:`${c.my} × ${c.pt}`,time:new Date().toLocaleString(),type:cardDefs[idx].type}); putFavs(f); loadFavs(); showToast('お気に入りに保存しました 📂'); }
+function deleteFav(idx){ if(!confirm('削除しますか？')) return; const f=getFavs(); f.splice(idx,1); putFavs(f); loadFavs(); showToast('削除しました'); }
+function loadFavs(){
+    const f=getFavs(); document.getElementById('fav-count').textContent=f.length;
+    const list=document.getElementById('fav-list'); list.innerHTML='';
+    if(!f.length){ list.innerHTML='<p style="text-align:center;color:var(--text-dim);padding:16px 0;font-size:13px;">まだ保存はありません</p>'; return; }
+    f.forEach((it,idx)=>{ const d=document.createElement('div'); d.className='fav-item'; d.innerHTML=`<button class="btn-fav-del" onclick="deleteFav(${idx})">×</button><div class="fav-meta">${it.time}　|　${it.context}　|　${it.type}</div><div class="fav-title">${it.title}</div><div class="fav-desc">${it.problem}</div><div class="fav-foot"><button class="btn-fav-copy" onclick="clip('①${it.title.replace(/'/g,"\\'")} ②${it.problem.replace(/'/g,"\\'")} ③${it.action.replace(/'/g,"\\'")}');showToast('コピーしました 📋')">📋 コピー</button></div>`; list.appendChild(d); });
+}
+function toggleFavs(){ const list=document.getElementById('fav-list'),icon=document.getElementById('fav-icon'); const o=list.classList.toggle('open'); icon.classList.toggle('open',o); }
 
-        // Show Loading
-        const loader = document.getElementById('loading-overlay');
-        const loadingText = document.getElementById('loading-text');
-        loader.style.display = 'flex';
-        
-        const messages = ["組み合わせを分析中...", "課題を抽出中...", "アイデアを生成中..."];
-        let msgIndex = 0;
-        
-        // Cycle text
-        const interval = setInterval(() => {
-            if(msgIndex < messages.length) {
-                loadingText.textContent = messages[msgIndex];
-                msgIndex++;
-            }
-        }, 500);
-
-        // Finish after 1.5s
-        setTimeout(() => {
-            clearInterval(interval);
-            loader.style.display = 'none';
-            loadingText.textContent = "計算中...";
-            
-            // Show Results
-            const resultArea = document.getElementById('result-area');
-            resultArea.style.display = 'block';
-            resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
-            // Show Badge
-            document.getElementById('combination-display').textContent = `${myInd} × ${partnerInd}`;
-
-            renderCards(myInd, partnerInd);
-        }, 1500);
-    }
-
-    function renderCards(myInd, partnerInd) {
-        const container = document.getElementById('cards-container');
-        container.innerHTML = '';
-
-        // Dynamic Text Generation (Replacing placeholders)
-        // This makes the demo feel "real" by injecting industry names
-        const dynamicResults = [
-            {
-                id: 1,
-                title: `「${partnerInd}」との定例数字共有ミーティング`,
-                problem: `お互いの専門外（${myInd}の数字、${partnerInd}の現場）が見えにくい`,
-                action: `(1)直近3ヶ月の${myInd}実績をA4一枚に (2)${partnerInd}の最も気になる課題を1つ聞く (3)次の一手を決める`
-            },
-            {
-                id: 2,
-                title: `現場写真で作る「${partnerInd}向け」事例解説Web`,
-                problem: `${myInd}の技術が伝わらず、価格競争になるのを避ける`,
-                action: `(1)${partnerInd}からよくある相談3つを書く (2)現場写真を10枚集める (3)解決事例を1ページにまとめる`
-            },
-            {
-                id: 3,
-                title: `交流会翌日に送る「${partnerInd}特化」メッセージ`,
-                problem: `ただの名刺交換で終わらせず、${myInd}としての価値を伝える`,
-                action: `(1)相手の困りごとを1行で要約 (2)${myInd}視点の提案を1つ添える (3)打合せ候補日を2つ出す`
-            }
-        ];
-
-        dynamicResults.forEach((item, index) => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.style.animationDelay = `${index * 0.1}s`; // Staggered animation
-            
-            // Format content for copying
-            const copyText = `案${index+1}：①${item.title} ②${item.problem} ③${item.action}`;
-
-            card.innerHTML = `
-                <div class="card-header">
-                    <span class="card-title">案${index+1}</span>
-                </div>
-                <div class="card-body">
-                    <p><span class="card-tag">①</span><strong>${item.title}</strong></p>
-                    <p><span class="card-tag">②</span>${item.problem}</p>
-                    <p><span class="card-tag">③</span>${item.action}</p>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-action copy" onclick="copyText('${copyText.replace(/'/g, "\\'")}')">コピー</button>
-                    <button class="btn btn-action save" onclick="saveToFav(${index}, '${item.title.replace(/'/g, "\\'")}', '${item.problem.replace(/'/g, "\\'")}', '${item.action.replace(/'/g, "\\'")}')">保存</button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-        
-        // Store current results globally for bulk copy functions to access
-        window.currentResults = dynamicResults;
-    }
-
-    function resetForm() {
-        document.getElementById('my-industry').selectedIndex = 0;
-        document.getElementById('partner-industry').selectedIndex = 0;
-        document.getElementById('memo').value = '';
-        document.getElementById('result-area').style.display = 'none';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // --- Copy Functionality (Robust) ---
-    function copyText(text) {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        textArea.style.top = "0";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) showToast("コピーしました！📋");
-            else alert("コピーに失敗しました。");
-        } catch (err) {
-            console.error('Copy failed', err);
-            alert("コピーに失敗しました。");
-        }
-        document.body.removeChild(textArea);
-    }
-
-    function copyAll() {
-        if (!window.currentResults) return;
-        let allText = "【ビジネス掛け算ラボ 結果】\n\n";
-        window.currentResults.forEach((item, index) => {
-            allText += `案${index+1}：\n①${item.title}\n②${item.problem}\n③${item.action}\n\n`;
-        });
-        copyText(allText);
-    }
-
-    // --- Advanced Copy Functions ---
-    function getInputContext() {
-        return {
-            myInd: document.getElementById('my-industry').value || '未選択',
-            partnerInd: document.getElementById('partner-industry').value || '未選択',
-            memo: document.getElementById('memo').value || 'なし'
-        };
-    }
-
-    function copyForNotebookLMSource() {
-        if (!window.currentResults) return;
-        const ctx = getInputContext();
-        let text = `# ビジネスアイデア創出会議議事録\n\n`;
-        text += `## 前提条件\n- 自社: ${ctx.myInd}\n- 連携先: ${ctx.partnerInd}\n- 補足メモ: ${ctx.memo}\n\n`;
-        text += `## 創出されたアイデア案\n\n`;
-        window.currentResults.forEach((item, index) => {
-            text += `### 案${index+1}: ${item.title}\n#### 解決する課題\n${item.problem}\n#### 具体的なアクション\n${item.action}\n\n`;
-        });
-        copyText(text);
-    }
-
-    function copyForNotebookLMPrompt() {
-        let text = `ソースとして提供した「ビジネスアイデア創出会議議事録」をもとに、以下の成果物を作成してください。\n\n`;
-        text += `1. **スライド構成案**: クライアントへの提案資料（全5枚程度）の構成案\n`;
-        text += `2. **インフォグラフィック構成案**: 各アイデアを視覚的に説明するためのレイアウト指示\n`;
-        copyText(text);
-    }
-
-    function copyForMailPrompt() {
-        if (!window.currentResults) return;
-        const ctx = getInputContext();
-        let text = `あなたはプロのセールスコピーライターです。\n以下の3つのアイデアをもとに、連携先「${ctx.partnerInd}」へのアポ打診メールを作成してください。\n\n`;
-        text += `## 提案内容\n`;
-        window.currentResults.forEach((item, index) => {
-            text += `- ${item.title} (課題: ${item.problem})\n`;
-        });
-        copyText(text);
-    }
-
-    // --- Toast UI ---
-    function showToast(message) {
-        const toast = document.getElementById("toast");
-        toast.textContent = message;
-        toast.className = "toast show";
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-    }
-
-    // --- LocalStorage / Favorites ---
-    const STORAGE_KEY = 'bizLabFavs';
-
-    function saveToFav(index, title, problem, action) {
-        const currentFavs = getFavs();
-        const ctx = getInputContext();
-        
-        const newItem = {
-            title: title,
-            problem: problem,
-            action: action,
-            timestamp: new Date().toLocaleString(),
-            context: `${ctx.myInd} × ${ctx.partnerInd}`
-        };
-
-        currentFavs.unshift(newItem);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentFavs));
-        
-        loadFavorites();
-        showToast("お気に入りに保存しました 📂");
-        document.getElementById('favorites-list').style.display = 'grid';
-    }
-
-    function getFavs() {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? JSON.parse(stored) : [];
-    }
-
-    function loadFavorites() {
-        const favs = getFavs();
-        const container = document.getElementById('favorites-list');
-        document.getElementById('fav-count').textContent = `(${favs.length})`;
-        container.innerHTML = '';
-
-        if (favs.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#999; grid-column: 1/-1;">まだ保存されたアイデアはありません。</p>';
-            return;
-        }
-
-        favs.forEach((item, index) => {
-            const div = document.createElement('div');
-            div.className = 'fav-item';
-            div.innerHTML = `
-                <div class="delete-btn" onclick="deleteFav(${index})">×</div>
-                <div class="fav-meta">${item.timestamp} | ${item.context}</div>
-                <div style="font-weight:bold; color:var(--primary-color); margin-bottom:5px;">${item.title}</div>
-                <div style="font-size:12px; color:#555;">${item.problem}</div>
-                <button class="btn btn-action copy" style="margin-top:10px; font-size:11px; padding:4px 8px;" 
-                    onclick="copyText('①${item.title} ②${item.problem} ③${item.action}')">コピー</button>
-            `;
-            container.appendChild(div);
-        });
-    }
-
-    function deleteFav(index) {
-        if(!confirm('削除してよろしいですか？')) return;
-        const favs = getFavs();
-        favs.splice(index, 1);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
-        loadFavorites();
-        showToast("削除しました 🗑️");
-    }
-
-    function toggleFavorites() {
-        const list = document.getElementById('favorites-list');
-        list.style.display = (list.style.display === 'none') ? 'grid' : 'none';
-    }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'; setTimeout(()=>{ t.className='toast'; },3000); }
 </script>
-
 </body>
 </html>
